@@ -7,10 +7,12 @@ export interface Meeting {
   host_name: string;
   status: 'scheduled' | 'completed' | 'cancelled';
   savings_percentage: number;
-  total_contributions: number;
+  expected_contribution: number;
+  total_collected: number;
   total_saved: number;
   total_to_host: number;
   notes: string;
+  minutes: string;
   created_at: string;
   updated_at: string;
 }
@@ -31,6 +33,30 @@ export interface MeetingUpdate {
   status?: string;
   savings_percentage?: number;
   notes?: string;
+  minutes?: string;
+}
+
+export interface PaymentDetail {
+  id: number;
+  amount: number;
+  method: 'cash' | 'mpesa';
+  notes: string;
+  created_at: string;
+}
+
+export interface MemberStatus {
+  member_id: number;
+  member_name: string;
+  member_phone: string;
+  is_host: boolean;
+  attended: boolean;
+  total_paid: number;
+  balance: number;
+  payments: PaymentDetail[];
+}
+
+export interface MeetingDetail extends Meeting {
+  member_statuses: MemberStatus[];
 }
 
 export const MEETING_MONTHS = [

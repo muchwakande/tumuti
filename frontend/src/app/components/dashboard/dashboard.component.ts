@@ -5,8 +5,8 @@ import { forkJoin } from 'rxjs';
 import { LoadingSpinnerComponent } from '../shared/loading-spinner.component';
 import { MembersService } from '../../services/members.service';
 import { MeetingsService } from '../../services/meetings.service';
-import { ContributionsService } from '../../services/contributions.service';
-import { Meeting, ContributionSummary, MEETING_MONTH_NAMES } from '../../models';
+import { PaymentsService } from '../../services/contributions.service';
+import { Meeting, PaymentSummary, MEETING_MONTH_NAMES } from '../../models';
 
 @Component({
   selector: 'app-dashboard',
@@ -55,8 +55,8 @@ import { Meeting, ContributionSummary, MEETING_MONTH_NAMES } from '../../models'
           <div class="card">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-gray-500">Total Savings</p>
-                <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(summary?.total_saved || 0) }}</p>
+                <p class="text-sm font-medium text-gray-500">Total Collected</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(summary?.total_collected || 0) }}</p>
               </div>
               <div class="p-3 rounded-full bg-purple-100">
                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,8 +69,8 @@ import { Meeting, ContributionSummary, MEETING_MONTH_NAMES } from '../../models'
           <div class="card">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-gray-500">Contributions</p>
-                <p class="text-2xl font-bold text-gray-900 mt-1">{{ summary?.contribution_count || 0 }}</p>
+                <p class="text-sm font-medium text-gray-500">Payments</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ summary?.payment_count || 0 }}</p>
               </div>
               <div class="p-3 rounded-full bg-yellow-100">
                 <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,8 +121,8 @@ import { Meeting, ContributionSummary, MEETING_MONTH_NAMES } from '../../models'
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Financial Summary</h2>
             <div class="space-y-3">
               <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                <span class="text-sm text-gray-600">Total Contributions</span>
-                <span class="font-semibold text-gray-900">{{ formatCurrency(summary?.total_amount || 0) }}</span>
+                <span class="text-sm text-gray-600">Total Collected</span>
+                <span class="font-semibold text-gray-900">{{ formatCurrency(summary?.total_collected || 0) }}</span>
               </div>
               <div class="flex justify-between items-center py-2 border-b border-gray-100">
                 <span class="text-sm text-gray-600">Total Savings (pooled)</span>
@@ -158,11 +158,11 @@ import { Meeting, ContributionSummary, MEETING_MONTH_NAMES } from '../../models'
               </svg>
               <span class="text-sm font-medium text-gray-700">Schedule Meeting</span>
             </a>
-            <a routerLink="/contributions" class="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:border-primary-200 border border-transparent transition-all">
+            <a routerLink="/payments" class="flex flex-col items-center p-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:border-primary-200 border border-transparent transition-all">
               <svg class="w-8 h-8 text-primary-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
-              <span class="text-sm font-medium text-gray-700">Add Contribution</span>
+              <span class="text-sm font-medium text-gray-700">Record Payment</span>
             </a>
           </div>
         </div>
@@ -173,13 +173,13 @@ import { Meeting, ContributionSummary, MEETING_MONTH_NAMES } from '../../models'
 export class DashboardComponent implements OnInit {
   private membersService = inject(MembersService);
   private meetingsService = inject(MeetingsService);
-  private contributionsService = inject(ContributionsService);
+  private paymentsService = inject(PaymentsService);
 
   loading = true;
   totalMembers = 0;
   activeHosts = 0;
   nextMeeting: Meeting | null = null;
-  summary: ContributionSummary | null = null;
+  summary: PaymentSummary | null = null;
 
   readonly monthNames = MEETING_MONTH_NAMES;
 
@@ -192,7 +192,7 @@ export class DashboardComponent implements OnInit {
       members: this.membersService.getMembers({ is_active: true }),
       hosts: this.membersService.getMembers({ is_host: true, is_active: true }),
       upcoming: this.meetingsService.getUpcoming(),
-      summary: this.contributionsService.getSummary(),
+      summary: this.paymentsService.getSummary(),
     }).subscribe({
       next: (data) => {
         this.totalMembers = data.members.length;

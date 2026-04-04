@@ -64,7 +64,9 @@ class Meeting(models.Model):
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
     savings_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('30.00'))
+    expected_contribution = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('1000.00'))
     notes = models.TextField(blank=True)
+    minutes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -77,54 +79,52 @@ class Meeting(models.Model):
         return f"{self.get_month_display()} {self.year}"
 
     @property
-    def total_contributions(self) -> Decimal:
-        result = self.contributions.aggregate(total=models.Sum('amount'))['total']
+    def total_collected(self) -> Decimal:
+        result = self.payments.aggregate(total=models.Sum('amount'))['total']
         return result or Decimal('0.00')
 
     @property
     def total_saved(self) -> Decimal:
-        result = self.contributions.aggregate(total=models.Sum('saved_amount'))['total']
-        return result or Decimal('0.00')
+        return (self.total_collected * self.savings_percentage / Decimal('100')).quantize(Decimal('0.01'))
 
     @property
     def total_to_host(self) -> Decimal:
-        result = self.contributions.aggregate(total=models.Sum('host_amount'))['total']
-        return result or Decimal('0.00')
+        return self.total_collected - self.total_saved
 
 
-class Contribution(models.Model):
-    """A financial contribution made by a host member for a meeting."""
+class Attendance(models.Model):
+    """Records whether a family member attended a specific meeting."""
 
-    meeting = models.ForeignKey(
-        Meeting,
-        on_delete=models.CASCADE,
-        related_name='contributions',
-    )
-    member = models.ForeignKey(
-        FamilyMember,
-        on_delete=models.PROTECT,
-        related_name='contributions',
-        limit_choices_to={'is_host': True},
-    )
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='attendances')
+    member = models.ForeignKey(FamilyMember, on_delete=models.CASCADE, related_name='attendances')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'attendance'
+        unique_together = ('meeting', 'member')
+
+    def __str__(self):
+        return f"{self.member.name} @ {self.meeting}"
+
+
+class Payment(models.Model):
+    """An individual payment made by a member towards a meeting's contribution."""
+
+    class Method(models.TextChoices):
+        CASH = 'cash', 'Cash'
+        MPESA = 'mpesa', 'MPESA'
+
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='payments')
+    member = models.ForeignKey(FamilyMember, on_delete=models.PROTECT, related_name='payments')
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    saved_amount = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
-    host_amount = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+    method = models.CharField(max_length=10, choices=Method.choices, default=Method.CASH)
     notes = models.TextField(blank=True)
-    date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'contributions'
-        ordering = ['-date']
-        unique_together = ('meeting', 'member')
+        db_table = 'payments'
+        ordering = ['created_at']
 
     def __str__(self):
-        return f"{self.member.name} - {self.meeting} - {self.amount}"
-
-    def save(self, *args, **kwargs):
-        """Auto-calculate saved_amount and host_amount before saving."""
-        savings_pct = self.meeting.savings_percentage
-        self.saved_amount = (self.amount * savings_pct / Decimal('100')).quantize(Decimal('0.01'))
-        self.host_amount = self.amount - self.saved_amount
-        super().save(*args, **kwargs)
+        return f"{self.member.name} – {self.method} {self.amount} @ {self.meeting}"

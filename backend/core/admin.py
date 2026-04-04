@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import FamilyMember, Meeting, Contribution
+from .models import FamilyMember, Meeting
 
 
 @admin.register(FamilyMember)
@@ -16,12 +16,4 @@ class MeetingAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'date', 'host', 'status', 'savings_percentage', 'created_at')
     list_filter = ('status', 'month', 'year')
     search_fields = ('host__name', 'notes')
-    date_hierarchy = 'date'
-
-
-@admin.register(Contribution)
-class ContributionAdmin(admin.ModelAdmin):
-    list_display = ('member', 'meeting', 'amount', 'saved_amount', 'host_amount', 'date')
-    list_filter = ('meeting__year', 'meeting__month')
-    search_fields = ('member__name', 'notes')
     date_hierarchy = 'date'

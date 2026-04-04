@@ -1,9 +1,13 @@
+from decimal import Decimal
 from typing import List, Optional
 from ninja import Router
 from django.shortcuts import get_object_or_404
 
-from ..models import Meeting, FamilyMember
-from ..schemas import MeetingCreate, MeetingUpdate, MeetingOut, MessageOut
+from ..models import Meeting, FamilyMember, Attendance, Payment
+from ..schemas import (
+    MeetingCreate, MeetingUpdate, MeetingOut, MeetingDetailOut,
+    MemberStatusOut, PaymentDetailOut, MessageOut,
+)
 from ..auth import AuthBearer
 
 router = Router(auth=AuthBearer())
@@ -21,10 +25,12 @@ def meeting_to_out(meeting: Meeting) -> MeetingOut:
         host_name=meeting.host.name,
         status=meeting.status,
         savings_percentage=meeting.savings_percentage,
-        total_contributions=meeting.total_contributions,
+        expected_contribution=meeting.expected_contribution,
+        total_collected=meeting.total_collected,
         total_saved=meeting.total_saved,
         total_to_host=meeting.total_to_host,
         notes=meeting.notes,
+        minutes=meeting.minutes,
         created_at=meeting.created_at,
         updated_at=meeting.updated_at,
     )
@@ -115,3 +121,60 @@ def delete_meeting(request, meeting_id: int):
     meeting = get_object_or_404(Meeting, id=meeting_id)
     meeting.delete()
     return {"message": "Meeting deleted successfully"}
+
+
+@router.get("/{meeting_id}/detail/", response={200: MeetingDetailOut, 404: MessageOut})
+def get_meeting_detail(request, meeting_id: int):
+    """Return meeting info plus all active members with their attendance, payments and balance."""
+    meeting = get_object_or_404(Meeting.objects.select_related('host'), id=meeting_id)
+
+    members = FamilyMember.objects.filter(is_active=True).order_by('name')
+
+    attended_ids = set(
+        Attendance.objects.filter(meeting=meeting).values_list('member_id', flat=True)
+    )
+
+    payments_by_member: dict[int, list[Payment]] = {}
+    for p in Payment.objects.filter(meeting=meeting).order_by('created_at'):
+        payments_by_member.setdefault(p.member_id, []).append(p)
+
+    member_statuses = []
+    for member in members:
+        member_payments = payments_by_member.get(member.id, [])
+        total_paid = sum((p.amount for p in member_payments), Decimal('0.00'))
+        member_statuses.append(MemberStatusOut(
+            member_id=member.id,
+            member_name=member.name,
+            member_phone=member.phone,
+            is_host=member.is_host,
+            attended=member.id in attended_ids,
+            total_paid=total_paid,
+            balance=meeting.expected_contribution - total_paid,
+            payments=[
+                PaymentDetailOut(
+                    id=p.id,
+                    amount=p.amount,
+                    method=p.method,
+                    notes=p.notes,
+                    created_at=p.created_at,
+                )
+                for p in member_payments
+            ],
+        ))
+
+    return MeetingDetailOut(
+        **meeting_to_out(meeting).model_dump(),
+        member_statuses=member_statuses,
+    )
+
+
+@router.post("/{meeting_id}/attendance/{member_id}/", response={200: MessageOut, 404: MessageOut})
+def toggle_attendance(request, meeting_id: int, member_id: int):
+    """Toggle a member's attendance at a meeting."""
+    meeting = get_object_or_404(Meeting, id=meeting_id)
+    member = get_object_or_404(FamilyMember, id=member_id)
+    attendance, created = Attendance.objects.get_or_create(meeting=meeting, member=member)
+    if not created:
+        attendance.delete()
+        return {"message": "absent"}
+    return {"message": "attended"}

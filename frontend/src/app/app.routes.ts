@@ -34,7 +34,15 @@ export const routes: Routes = [
         loadComponent: () => import('./components/meetings/meetings-list.component').then(m => m.MeetingsListComponent)
       },
       {
-        path: 'contributions',
+        path: 'meetings/:id',
+        loadComponent: () => import('./components/meetings/meeting-detail.component').then(m => m.MeetingDetailComponent)
+      },
+      {
+        path: 'meetings/:id/minutes',
+        loadComponent: () => import('./components/meetings/meeting-minutes.component').then(m => m.MeetingMinutesComponent)
+      },
+      {
+        path: 'payments',
         loadComponent: () => import('./components/contributions/contributions-list.component').then(m => m.ContributionsListComponent)
       }
     ]

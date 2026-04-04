@@ -2,17 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Contribution, ContributionCreate, ContributionUpdate, ContributionSummary } from '../models';
+import { Payment, PaymentCreate, PaymentSummary } from '../models';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ContributionsService {
-  private readonly apiUrl = `${environment.apiUrl}/contributions/`;
+export class PaymentsService {
+  private readonly apiUrl = `${environment.apiUrl}/payments/`;
 
   constructor(private http: HttpClient) {}
 
-  getContributions(filters?: { meeting_id?: number; member_id?: number }): Observable<Contribution[]> {
+  getPayments(filters?: { meeting_id?: number; member_id?: number }): Observable<Payment[]> {
     let params = new HttpParams();
     if (filters?.meeting_id !== undefined) {
       params = params.set('meeting_id', filters.meeting_id.toString());
@@ -20,30 +20,22 @@ export class ContributionsService {
     if (filters?.member_id !== undefined) {
       params = params.set('member_id', filters.member_id.toString());
     }
-    return this.http.get<Contribution[]>(this.apiUrl, { params });
+    return this.http.get<Payment[]>(this.apiUrl, { params });
   }
 
-  getSummary(meeting_id?: number): Observable<ContributionSummary> {
+  getSummary(meeting_id?: number): Observable<PaymentSummary> {
     let params = new HttpParams();
     if (meeting_id !== undefined) {
       params = params.set('meeting_id', meeting_id.toString());
     }
-    return this.http.get<ContributionSummary>(`${this.apiUrl}summary/`, { params });
+    return this.http.get<PaymentSummary>(`${this.apiUrl}summary/`, { params });
   }
 
-  getContribution(id: number): Observable<Contribution> {
-    return this.http.get<Contribution>(`${this.apiUrl}${id}/`);
+  createPayment(data: PaymentCreate): Observable<Payment> {
+    return this.http.post<Payment>(this.apiUrl, data);
   }
 
-  createContribution(data: ContributionCreate): Observable<Contribution> {
-    return this.http.post<Contribution>(this.apiUrl, data);
-  }
-
-  updateContribution(id: number, data: ContributionUpdate): Observable<Contribution> {
-    return this.http.patch<Contribution>(`${this.apiUrl}${id}/`, data);
-  }
-
-  deleteContribution(id: number): Observable<{ message: string }> {
+  deletePayment(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}${id}/`);
   }
 }

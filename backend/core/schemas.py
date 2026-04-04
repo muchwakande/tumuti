@@ -90,6 +90,7 @@ class MeetingUpdate(BaseModel):
     status: Optional[str] = None
     savings_percentage: Optional[Decimal] = None
     notes: Optional[str] = None
+    minutes: Optional[str] = None
 
 
 class MeetingOut(BaseModel):
@@ -101,10 +102,12 @@ class MeetingOut(BaseModel):
     host_name: str
     status: str
     savings_percentage: Decimal
-    total_contributions: Decimal
+    expected_contribution: Decimal
+    total_collected: Decimal
     total_saved: Decimal
     total_to_host: Decimal
     notes: str
+    minutes: str
     created_at: datetime
     updated_at: datetime
 
@@ -112,40 +115,57 @@ class MeetingOut(BaseModel):
         from_attributes = True
 
 
-# Contribution Schemas
-class ContributionBase(BaseModel):
+# Meeting Detail Schemas
+class PaymentDetailOut(BaseModel):
+    id: int
+    amount: Decimal
+    method: str
+    notes: str
+    created_at: datetime
+
+
+class MemberStatusOut(BaseModel):
+    member_id: int
+    member_name: str
+    member_phone: str
+    is_host: bool
+    attended: bool
+    total_paid: Decimal
+    balance: Decimal
+    payments: List[PaymentDetailOut]
+
+
+class MeetingDetailOut(MeetingOut):
+    member_statuses: List[MemberStatusOut]
+
+
+# Payment Schemas
+class PaymentCreate(BaseModel):
     meeting_id: int
     member_id: int
     amount: Decimal = Field(..., gt=0)
+    method: str = "cash"
     notes: str = ""
-    date: date
 
 
-class ContributionCreate(ContributionBase):
-    pass
-
-
-class ContributionUpdate(BaseModel):
-    amount: Optional[Decimal] = None
-    notes: Optional[str] = None
-    date: Optional[date] = None
-
-
-class ContributionOut(BaseModel):
+class PaymentOut(BaseModel):
     id: int
     meeting_id: int
+    meeting_label: str
     member_id: int
     member_name: str
     amount: Decimal
-    saved_amount: Decimal
-    host_amount: Decimal
+    method: str
     notes: str
-    date: date
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+
+class PaymentSummary(BaseModel):
+    total_collected: Decimal
+    total_saved: Decimal
+    total_to_host: Decimal
+    payment_count: int
 
 
 # Auth Schemas
@@ -163,16 +183,9 @@ class LoginIn(BaseModel):
 class DashboardSummary(BaseModel):
     total_members: int
     active_hosts: int
-    total_contributions_count: int
-    total_savings: Decimal
+    payment_count: int
+    total_collected: Decimal
     next_meeting: Optional[MeetingOut]
-
-
-class ContributionSummary(BaseModel):
-    total_amount: Decimal
-    total_saved: Decimal
-    total_to_host: Decimal
-    contribution_count: int
 
 
 # Message Schema

@@ -74,11 +74,11 @@ import { Meeting, MeetingCreate, MeetingUpdate, FamilyMember, MEETING_MONTHS, ME
                       <p class="font-medium text-gray-900">{{ meeting.savings_percentage }}%</p>
                     </div>
                     <div>
-                      <span class="text-gray-500">Total Contributions:</span>
-                      <p class="font-medium text-green-700">{{ formatCurrency(meeting.total_contributions) }}</p>
+                      <span class="text-gray-500">Total Collected:</span>
+                      <p class="font-medium text-green-700">{{ formatCurrency(meeting.total_collected) }}</p>
                     </div>
                   </div>
-                  @if (meeting.total_contributions > 0) {
+                  @if (meeting.total_collected > 0) {
                     <div class="mt-3 flex gap-6 text-sm">
                       <div>
                         <span class="text-gray-500">Pooled Savings:</span>
@@ -92,8 +92,14 @@ import { Meeting, MeetingCreate, MeetingUpdate, FamilyMember, MEETING_MONTHS, ME
                   }
                 </div>
                 <div class="flex flex-col gap-2 ml-4">
-                  <a [routerLink]="['/contributions']" [queryParams]="{meeting_id: meeting.id}" class="btn-secondary text-xs text-center">
-                    Contributions
+                  <a [routerLink]="['/meetings', meeting.id]" class="btn-primary text-xs text-center">
+                    View Detail
+                  </a>
+                  <a [routerLink]="['/payments']" [queryParams]="{meeting_id: meeting.id}" class="btn-secondary text-xs text-center">
+                    Payments
+                  </a>
+                  <a [routerLink]="['/meetings', meeting.id, 'minutes']" class="btn-secondary text-xs text-center">
+                    {{ meeting.minutes ? 'View Minutes' : 'Add Minutes' }}
                   </a>
                   <button (click)="editMeeting(meeting)" class="text-primary-600 hover:text-primary-800 text-xs font-medium text-right">Edit</button>
                   <button (click)="confirmDelete(meeting)" class="text-red-600 hover:text-red-800 text-xs font-medium text-right">Delete</button>
@@ -200,7 +206,7 @@ import { Meeting, MeetingCreate, MeetingUpdate, FamilyMember, MEETING_MONTHS, ME
                 </svg>
               </div>
               <h3 class="text-lg font-medium">Delete Meeting</h3>
-              <p class="mt-2 text-sm text-gray-500">Delete <strong>{{ meetingToDelete ? monthName(meetingToDelete.month) + ' ' + meetingToDelete.year : '' }}</strong>? All contributions will also be deleted.</p>
+              <p class="mt-2 text-sm text-gray-500">Delete <strong>{{ meetingToDelete ? monthName(meetingToDelete.month) + ' ' + meetingToDelete.year : '' }}</strong>? All payments will also be deleted.</p>
               <div class="mt-6 flex justify-center gap-3">
                 <button (click)="showDeleteConfirm = false" class="btn-secondary">Cancel</button>
                 <button (click)="deleteMeeting()" class="btn-danger">Delete</button>

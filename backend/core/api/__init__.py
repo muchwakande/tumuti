@@ -5,13 +5,13 @@ from django.http import HttpRequest
 from .auth import router as auth_router
 from .members import router as members_router
 from .meetings import router as meetings_router
-from .contributions import router as contributions_router
+from .payments import router as payments_router
 
 
 api = NinjaAPI(
     title="Family Reunion API",
     version="1.0.0",
-    description="API for managing family reunion members, meetings, and contributions",
+    description="API for managing family reunion members, meetings, and payments",
 )
 
 
@@ -27,4 +27,4 @@ def validation_errors(request: HttpRequest, exc: ValidationError):
 api.add_router("/auth", auth_router, tags=["Authentication"])
 api.add_router("/members", members_router, tags=["Members"])
 api.add_router("/meetings", meetings_router, tags=["Meetings"])
-api.add_router("/contributions", contributions_router, tags=["Contributions"])
+api.add_router("/payments", payments_router, tags=["Payments"])
