@@ -6,13 +6,6 @@ import { SidebarComponent } from './sidebar.component';
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, SidebarComponent],
-  template: `
-    <div class="min-h-screen bg-gray-50">
-      <app-sidebar></app-sidebar>
-      <main class="ml-64 p-8">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
-  `
+  templateUrl: './layout.component.html'
 })
 export class LayoutComponent {}

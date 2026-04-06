@@ -1,0 +1,23 @@
+
+    :host ::ng-deep .ql-toolbar {
+      border-color: #e5e7eb;
+      background: #f9fafb;
+    }
+    :host ::ng-deep .ql-container {
+      border-color: #e5e7eb;
+    }
+    :host ::ng-deep .ql-editor {
+      padding: 1.25rem 1.5rem;
+      line-height: 1.75;
+    }
+    :host ::ng-deep .ql-editor h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    :host ::ng-deep .ql-editor h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    :host ::ng-deep .ql-editor h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    :host ::ng-deep .ql-editor p { margin-bottom: 0.5rem; }
+    :host ::ng-deep .ql-editor ul, :host ::ng-deep .ql-editor ol { padding-left: 1.5rem; margin-bottom: 0.5rem; }
+    :host ::ng-deep .ql-editor blockquote {
+      border-left: 4px solid #d1d5db;
+      padding-left: 1rem;
+      color: #6b7280;
+      margin: 0.5rem 0;
+    }
