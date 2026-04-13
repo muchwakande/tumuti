@@ -1,7 +1,7 @@
 
     <div>
       <!-- Header -->
-      <div class="flex items-start gap-4 mb-6">
+      <div class="flex flex-wrap items-start gap-4 mb-6">
         <a routerLink="/meetings" class="mt-1 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -51,7 +51,7 @@
 
         <!-- Members table -->
         <div class="card p-0 overflow-hidden">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div class="flex flex-wrap items-center justify-between gap-2 px-6 py-4 border-b border-gray-100">
             <h2 class="text-lg font-semibold text-gray-900">Members</h2>
             <span class="text-sm text-gray-500">
               {{ attendedCount }} / {{ detail.member_statuses.length }} attended

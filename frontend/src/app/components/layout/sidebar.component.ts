@@ -11,4 +11,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class SidebarComponent {
   authService = inject(AuthService);
+  sidebarOpen = false;
+  toggle() { this.sidebarOpen = !this.sidebarOpen; }
+  close() { this.sidebarOpen = false; }
 }
