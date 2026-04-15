@@ -183,15 +183,15 @@
               >{{ savingMinutes ? 'Saving...' : 'Save Minutes' }}</button>
             </div>
           </div>
-          <div class="border border-gray-200 rounded-lg overflow-hidden">
+          <div class="border border-gray-200 rounded-lg overflow-hidden w-full">
             <quill-editor
               [(ngModel)]="minutes"
               [modules]="quillModules"
               theme="snow"
               format="html"
               (onContentChanged)="onMinutesChanged()"
-              [styles]="{ 'min-height': '300px', 'font-size': '15px', 'font-family': 'inherit' }"
-              class="block"
+              [styles]="{ 'min-height': '300px', 'font-size': '15px', 'font-family': 'inherit', 'width': '100%' }"
+              class="block w-full"
             ></quill-editor>
           </div>
         </div>

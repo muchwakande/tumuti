@@ -5,6 +5,11 @@
     }
     :host ::ng-deep .ql-container {
       border-color: #e5e7eb;
+      width: 100%;
+    }
+    :host ::ng-deep quill-editor {
+      display: block;
+      width: 100%;
     }
     :host ::ng-deep .ql-editor {
       padding: 1.25rem 1.5rem;
