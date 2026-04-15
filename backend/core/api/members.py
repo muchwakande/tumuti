@@ -206,12 +206,6 @@ def bulk_upload_members(request, file: UploadedFile = File(...)):
                 skipped_count += 1
                 continue
 
-        # Check duplicate email
-        if email and FamilyMember.objects.filter(email=email).exists():
-            errors.append(BulkUploadError(row=row_idx, message=f"email '{email}' already exists"))
-            skipped_count += 1
-            continue
-
         member = FamilyMember.objects.create(
             name=name,
             phone=phone,
@@ -267,9 +261,6 @@ def get_member(request, member_id: int):
 @router.post("/", response={201: FamilyMemberOut, 400: MessageOut})
 def create_member(request, payload: FamilyMemberCreate):
     """Create a new family member."""
-    if payload.email and FamilyMember.objects.filter(email=payload.email).exists():
-        return 400, {"message": "Email already exists"}
-
     if payload.spouse_id and payload.spouse_id == payload.parent_id:
         return 400, {"message": "Parent and spouse cannot be the same person"}
 
@@ -329,10 +320,6 @@ def update_member(request, member_id: int, payload: FamilyMemberUpdate):
             _apply_spouse(member, new_spouse_id)
         except ValueError as e:
             return 400, {"message": str(e)}
-
-    if 'email' in data and data['email'] and data['email'] != member.email:
-        if FamilyMember.objects.filter(email=data['email']).exists():
-            return 400, {"message": "Email already exists"}
 
     for attr, value in data.items():
         setattr(member, attr, value)

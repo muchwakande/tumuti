@@ -6,7 +6,7 @@ class FamilyMember(models.Model):
     """A family member who can optionally be a host."""
 
     name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=20)
     is_host = models.BooleanField(default=False)
     parent = models.ForeignKey(
