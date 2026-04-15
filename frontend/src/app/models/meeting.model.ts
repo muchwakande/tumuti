@@ -3,8 +3,8 @@ export interface Meeting {
   year: number;
   month: number;
   date: string;
-  host_id: number;
-  host_name: string;
+  host_ids: number[];
+  host_names: string[];
   status: 'scheduled' | 'completed' | 'cancelled';
   savings_percentage: number;
   expected_contribution: number;
@@ -21,7 +21,7 @@ export interface MeetingCreate {
   year: number;
   month: number;
   date: string;
-  host_id: number;
+  host_ids: number[];
   status?: string;
   savings_percentage?: number;
   notes?: string;
@@ -29,7 +29,7 @@ export interface MeetingCreate {
 
 export interface MeetingUpdate {
   date?: string;
-  host_id?: number;
+  host_ids?: number[];
   status?: string;
   savings_percentage?: number;
   notes?: string;

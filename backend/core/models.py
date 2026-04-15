@@ -56,11 +56,10 @@ class Meeting(models.Model):
     year = models.IntegerField()
     month = models.IntegerField(choices=Month.choices)
     date = models.DateField()
-    host = models.ForeignKey(
+    hosts = models.ManyToManyField(
         FamilyMember,
-        on_delete=models.PROTECT,
-        related_name='hosted_meetings',
-        limit_choices_to={'is_host': True},
+        related_name='hosting_meetings',
+        blank=True,
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
     savings_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('30.00'))

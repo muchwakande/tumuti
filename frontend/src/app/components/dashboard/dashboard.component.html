@@ -82,7 +82,7 @@
                       <span class="font-medium">Date:</span> {{ nextMeeting.date | date:'longDate' }}
                     </p>
                     <p class="text-sm text-gray-600 mt-1">
-                      <span class="font-medium">Host:</span> {{ nextMeeting.host_name }}
+                      <span class="font-medium">{{ nextMeeting.host_names.length === 1 ? 'Host' : 'Hosts' }}:</span> {{ nextMeeting.host_names.join(', ') }}
                     </p>
                     <p class="text-sm text-gray-600 mt-1">
                       <span class="font-medium">Savings:</span> {{ nextMeeting.savings_percentage }}%

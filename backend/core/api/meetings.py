@@ -16,13 +16,14 @@ VALID_MONTHS = {4, 8, 12}
 
 
 def meeting_to_out(meeting: Meeting) -> MeetingOut:
+    hosts = list(meeting.hosts.all())
     return MeetingOut(
         id=meeting.id,
         year=meeting.year,
         month=meeting.month,
         date=meeting.date,
-        host_id=meeting.host_id,
-        host_name=meeting.host.name,
+        host_ids=[h.id for h in hosts],
+        host_names=[h.name for h in hosts],
         status=meeting.status,
         savings_percentage=meeting.savings_percentage,
         expected_contribution=meeting.expected_contribution,
@@ -44,7 +45,7 @@ def list_meetings(
     status: Optional[str] = None,
 ):
     """List all meetings with optional filters."""
-    queryset = Meeting.objects.select_related('host').all()
+    queryset = Meeting.objects.prefetch_related('hosts').all()
     if year is not None:
         queryset = queryset.filter(year=year)
     if month is not None:
@@ -59,7 +60,7 @@ def get_upcoming_meetings(request):
     """Return scheduled meetings ordered by date ascending."""
     from django.utils import timezone
     today = timezone.now().date()
-    queryset = Meeting.objects.select_related('host').filter(
+    queryset = Meeting.objects.prefetch_related('hosts').filter(
         status=Meeting.Status.SCHEDULED,
         date__gte=today,
     ).order_by('date')
@@ -69,7 +70,7 @@ def get_upcoming_meetings(request):
 @router.get("/{meeting_id}/", response={200: MeetingOut, 404: MessageOut})
 def get_meeting(request, meeting_id: int):
     """Get a specific meeting by ID."""
-    meeting = get_object_or_404(Meeting.objects.select_related('host'), id=meeting_id)
+    meeting = get_object_or_404(Meeting.objects.prefetch_related('hosts'), id=meeting_id)
     return meeting_to_out(meeting)
 
 
@@ -82,31 +83,33 @@ def create_meeting(request, payload: MeetingCreate):
     if Meeting.objects.filter(year=payload.year, month=payload.month).exists():
         return 400, {"message": f"A meeting for {payload.month}/{payload.year} already exists"}
 
-    host = get_object_or_404(FamilyMember, id=payload.host_id, is_host=True)
+    if not payload.host_ids:
+        return 400, {"message": "At least one host is required"}
 
     meeting = Meeting.objects.create(
         year=payload.year,
         month=payload.month,
         date=payload.date,
-        host=host,
         status=payload.status,
         savings_percentage=payload.savings_percentage,
         notes=payload.notes,
     )
+    hosts = FamilyMember.objects.filter(id__in=payload.host_ids, is_host=True)
+    meeting.hosts.set(hosts)
     return 201, meeting_to_out(meeting)
 
 
 @router.patch("/{meeting_id}/", response={200: MeetingOut, 404: MessageOut, 400: MessageOut})
 def update_meeting(request, meeting_id: int, payload: MeetingUpdate):
     """Update a meeting."""
-    meeting = get_object_or_404(Meeting.objects.select_related('host'), id=meeting_id)
+    meeting = get_object_or_404(Meeting.objects.prefetch_related('hosts'), id=meeting_id)
 
     data = payload.dict(exclude_unset=True)
 
-    if 'host_id' in data:
-        host = get_object_or_404(FamilyMember, id=data['host_id'], is_host=True)
-        meeting.host = host
-        del data['host_id']
+    if 'host_ids' in data:
+        host_ids = data.pop('host_ids')
+        hosts = FamilyMember.objects.filter(id__in=host_ids, is_host=True)
+        meeting.hosts.set(hosts)
 
     for attr, value in data.items():
         setattr(meeting, attr, value)
@@ -126,7 +129,7 @@ def delete_meeting(request, meeting_id: int):
 @router.get("/{meeting_id}/detail/", response={200: MeetingDetailOut, 404: MessageOut})
 def get_meeting_detail(request, meeting_id: int):
     """Return meeting info plus all active members with their attendance, payments and balance."""
-    meeting = get_object_or_404(Meeting.objects.select_related('host'), id=meeting_id)
+    meeting = get_object_or_404(Meeting.objects.prefetch_related('hosts'), id=meeting_id)
 
     members = FamilyMember.objects.filter(is_active=True).order_by('name')
 

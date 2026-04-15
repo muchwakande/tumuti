@@ -53,8 +53,8 @@
                       <p class="font-medium text-gray-900">{{ meeting.date | date:'mediumDate' }}</p>
                     </div>
                     <div>
-                      <span class="text-gray-500">Host:</span>
-                      <p class="font-medium text-gray-900">{{ meeting.host_name }}</p>
+                      <span class="text-gray-500">{{ meeting.host_names.length === 1 ? 'Host' : 'Hosts' }}:</span>
+                      <p class="font-medium text-gray-900">{{ meeting.host_names.join(', ') || '—' }}</p>
                     </div>
                     <div>
                       <span class="text-gray-500">Savings %:</span>
@@ -139,15 +139,26 @@
                     <input type="date" [(ngModel)]="form.date" name="date" required class="input-field" />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Host *</label>
-                    <select [(ngModel)]="form.host_id" name="host_id" required class="input-field">
-                      <option [ngValue]="0">Select a host</option>
-                      @for (host of hosts; track host.id) {
-                        <option [ngValue]="host.id">{{ host.name }}</option>
-                      }
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hosts *</label>
                     @if (hosts.length === 0) {
-                      <p class="text-xs text-yellow-600 mt-1">No hosts available. Mark members as hosts first.</p>
+                      <p class="text-xs text-yellow-600">No hosts available. Mark members as hosts first.</p>
+                    } @else {
+                      <div class="border border-gray-300 rounded-lg p-2 max-h-40 overflow-y-auto space-y-1">
+                        @for (host of hosts; track host.id) {
+                          <label class="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              [checked]="isHostSelected(host.id)"
+                              (change)="toggleHost(host.id)"
+                              class="text-primary-600 rounded"
+                            />
+                            <span class="text-sm text-gray-800">{{ host.name }}</span>
+                          </label>
+                        }
+                      </div>
+                      @if (form.host_ids.length === 0) {
+                        <p class="text-xs text-red-500 mt-1">Select at least one host.</p>
+                      }
                     }
                   </div>
                   <div>

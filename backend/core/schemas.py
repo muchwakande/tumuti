@@ -74,7 +74,7 @@ class MeetingBase(BaseModel):
     year: int
     month: int = Field(..., description="4=April, 8=August, 12=December")
     date: date
-    host_id: int
+    host_ids: List[int]
     status: str = "scheduled"
     savings_percentage: Decimal = Field(default=Decimal('30.00'), ge=0, le=100)
     notes: str = ""
@@ -86,7 +86,7 @@ class MeetingCreate(MeetingBase):
 
 class MeetingUpdate(BaseModel):
     date: Optional[date] = None
-    host_id: Optional[int] = None
+    host_ids: Optional[List[int]] = None
     status: Optional[str] = None
     savings_percentage: Optional[Decimal] = None
     notes: Optional[str] = None
@@ -98,8 +98,8 @@ class MeetingOut(BaseModel):
     year: int
     month: int
     date: date
-    host_id: int
-    host_name: str
+    host_ids: List[int]
+    host_names: List[str]
     status: str
     savings_percentage: Decimal
     expected_contribution: Decimal

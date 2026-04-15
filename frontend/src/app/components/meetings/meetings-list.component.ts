@@ -45,11 +45,23 @@ export class MeetingsListComponent implements OnInit {
       year: this.currentYear,
       month: 0,
       date: '',
-      host_id: 0,
+      host_ids: [],
       status: 'scheduled',
       savings_percentage: 30,
       notes: '',
     };
+  }
+
+  isHostSelected(id: number): boolean {
+    return this.form.host_ids.includes(id);
+  }
+
+  toggleHost(id: number): void {
+    if (this.isHostSelected(id)) {
+      this.form.host_ids = this.form.host_ids.filter(h => h !== id);
+    } else {
+      this.form.host_ids = [...this.form.host_ids, id];
+    }
   }
 
   loadMeetings(): void {
@@ -101,7 +113,7 @@ export class MeetingsListComponent implements OnInit {
       year: meeting.year,
       month: meeting.month,
       date: meeting.date,
-      host_id: meeting.host_id,
+      host_ids: [...meeting.host_ids],
       status: meeting.status,
       savings_percentage: meeting.savings_percentage,
       notes: meeting.notes,
@@ -117,10 +129,14 @@ export class MeetingsListComponent implements OnInit {
 
   saveMeeting(): void {
     this.formError = '';
+    if (this.form.host_ids.length === 0) {
+      this.formError = 'At least one host is required.';
+      return;
+    }
     if (this.editingMeeting) {
       const update: MeetingUpdate = {
         date: this.form.date,
-        host_id: this.form.host_id,
+        host_ids: this.form.host_ids,
         status: this.form.status,
         savings_percentage: this.form.savings_percentage,
         notes: this.form.notes,

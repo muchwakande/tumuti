@@ -17,7 +17,7 @@
             </div>
             <p class="text-gray-500">
               {{ detail.date | date:'longDate' }}
-              &middot; Host: <span class="font-medium text-gray-700">{{ detail.host_name }}</span>
+              &middot; {{ detail.host_names.length === 1 ? 'Host' : 'Hosts' }}: <span class="font-medium text-gray-700">{{ detail.host_names.join(', ') || '—' }}</span>
               &middot; Savings: <span class="font-medium text-gray-700">{{ detail.savings_percentage }}%</span>
               &middot; Expected: <span class="font-medium text-gray-700">{{ fmt(detail.expected_contribution) }}/member</span>
             </p>
