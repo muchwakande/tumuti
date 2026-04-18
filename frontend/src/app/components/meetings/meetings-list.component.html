@@ -57,8 +57,8 @@
                       <p class="font-medium text-gray-900">{{ meeting.host_names.join(', ') || '—' }}</p>
                     </div>
                     <div>
-                      <span class="text-gray-500">Savings %:</span>
-                      <p class="font-medium text-gray-900">{{ meeting.savings_percentage }}%</p>
+                      <span class="text-gray-500">Savings / Member:</span>
+                      <p class="font-medium text-gray-900">KES 200</p>
                     </div>
                     <div>
                       <span class="text-gray-500">Total Collected:</span>
@@ -160,10 +160,6 @@
                         <p class="text-xs text-red-500 mt-1">Select at least one host.</p>
                       }
                     }
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Savings Percentage (%)</label>
-                    <input type="number" [(ngModel)]="form.savings_percentage" name="savings_percentage" min="0" max="100" step="0.01" class="input-field" />
                   </div>
                   @if (editingMeeting) {
                     <div>

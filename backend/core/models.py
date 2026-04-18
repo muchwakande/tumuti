@@ -61,8 +61,9 @@ class Meeting(models.Model):
         related_name='hosting_meetings',
         blank=True,
     )
+    SAVINGS_PER_MEMBER = Decimal('200.00')
+
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
-    savings_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('30.00'))
     expected_contribution = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('1000.00'))
     notes = models.TextField(blank=True)
     minutes = models.TextField(blank=True)
@@ -84,7 +85,12 @@ class Meeting(models.Model):
 
     @property
     def total_saved(self) -> Decimal:
-        return (self.total_collected * self.savings_percentage / Decimal('100')).quantize(Decimal('0.01'))
+        """Sum of each member's savings portion (min of what they paid vs Ksh 200)."""
+        member_totals = self.payments.values('member_id').annotate(total=models.Sum('amount'))
+        return sum(
+            (min(row['total'], self.SAVINGS_PER_MEMBER) for row in member_totals),
+            Decimal('0.00'),
+        )
 
     @property
     def total_to_host(self) -> Decimal:

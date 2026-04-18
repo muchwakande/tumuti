@@ -6,7 +6,6 @@ export interface Meeting {
   host_ids: number[];
   host_names: string[];
   status: 'scheduled' | 'completed' | 'cancelled';
-  savings_percentage: number;
   expected_contribution: number;
   total_collected: number;
   total_saved: number;
@@ -23,7 +22,6 @@ export interface MeetingCreate {
   date: string;
   host_ids: number[];
   status?: string;
-  savings_percentage?: number;
   notes?: string;
 }
 
@@ -31,7 +29,6 @@ export interface MeetingUpdate {
   date?: string;
   host_ids?: number[];
   status?: string;
-  savings_percentage?: number;
   notes?: string;
   minutes?: string;
 }
@@ -49,6 +46,7 @@ export interface MemberStatus {
   member_name: string;
   member_phone: string;
   is_host: boolean;
+  is_meeting_host: boolean;
   attended: boolean;
   total_paid: number;
   balance: number;

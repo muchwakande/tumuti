@@ -47,7 +47,6 @@ export class MeetingsListComponent implements OnInit {
       date: '',
       host_ids: [],
       status: 'scheduled',
-      savings_percentage: 30,
       notes: '',
     };
   }
@@ -115,7 +114,6 @@ export class MeetingsListComponent implements OnInit {
       date: meeting.date,
       host_ids: [...meeting.host_ids],
       status: meeting.status,
-      savings_percentage: meeting.savings_percentage,
       notes: meeting.notes,
     };
     this.showModal = true;
@@ -138,7 +136,6 @@ export class MeetingsListComponent implements OnInit {
         date: this.form.date,
         host_ids: this.form.host_ids,
         status: this.form.status,
-        savings_percentage: this.form.savings_percentage,
         notes: this.form.notes,
       };
       this.meetingsService.updateMeeting(this.editingMeeting.id, update).subscribe({

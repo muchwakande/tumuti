@@ -18,8 +18,8 @@
             <p class="text-gray-500">
               {{ detail.date | date:'longDate' }}
               &middot; {{ detail.host_names.length === 1 ? 'Host' : 'Hosts' }}: <span class="font-medium text-gray-700">{{ detail.host_names.join(', ') || '—' }}</span>
-              &middot; Savings: <span class="font-medium text-gray-700">{{ detail.savings_percentage }}%</span>
-              &middot; Expected: <span class="font-medium text-gray-700">{{ fmt(detail.expected_contribution) }}/member</span>
+              &middot; Savings: <span class="font-medium text-gray-700">KES 200/member</span>
+              &middot; Expected: <span class="font-medium text-gray-700">KES 1,000 (non-hosts) · KES 200 (hosts)</span>
             </p>
           </div>
         }
@@ -30,11 +30,7 @@
       } @else if (detail) {
 
         <!-- Financial summary -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div class="card text-center">
-            <p class="text-xs text-gray-500 mb-1">Expected / Member</p>
-            <p class="text-xl font-bold text-gray-900">{{ fmt(detail.expected_contribution) }}</p>
-          </div>
+        <div class="grid grid-cols-3 gap-4 mb-6">
           <div class="card text-center">
             <p class="text-xs text-gray-500 mb-1">Total Collected</p>
             <p class="text-xl font-bold text-green-700">{{ fmt(detail.total_collected) }}</p>
@@ -42,10 +38,12 @@
           <div class="card text-center">
             <p class="text-xs text-gray-500 mb-1">Pooled Savings</p>
             <p class="text-xl font-bold text-purple-700">{{ fmt(detail.total_saved) }}</p>
+            <p class="text-xs text-gray-400 mt-1">KES 200 / member</p>
           </div>
           <div class="card text-center">
-            <p class="text-xs text-gray-500 mb-1">To Host</p>
+            <p class="text-xs text-gray-500 mb-1">To Hosts</p>
             <p class="text-xl font-bold text-blue-700">{{ fmt(detail.total_to_host) }}</p>
+            <p class="text-xs text-gray-400 mt-1">KES 800 / non-host</p>
           </div>
         </div>
 
@@ -120,7 +118,7 @@
                     </td>
                     <td class="px-4 py-3 text-right">
                       @if (ms.is_host) {
-                        <span [class]="'text-sm font-semibold ' + balanceClass(ms.balance)">
+                        <span [class]="'text-sm font-semibold ' + balanceClass(ms)">
                           {{ balanceLabel(ms) }}
                         </span>
                       } @else {

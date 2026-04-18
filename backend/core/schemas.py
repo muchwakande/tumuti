@@ -76,7 +76,6 @@ class MeetingBase(BaseModel):
     date: date
     host_ids: List[int]
     status: str = "scheduled"
-    savings_percentage: Decimal = Field(default=Decimal('30.00'), ge=0, le=100)
     notes: str = ""
 
 
@@ -88,7 +87,6 @@ class MeetingUpdate(BaseModel):
     date: Optional[date] = None
     host_ids: Optional[List[int]] = None
     status: Optional[str] = None
-    savings_percentage: Optional[Decimal] = None
     notes: Optional[str] = None
     minutes: Optional[str] = None
 
@@ -101,7 +99,6 @@ class MeetingOut(BaseModel):
     host_ids: List[int]
     host_names: List[str]
     status: str
-    savings_percentage: Decimal
     expected_contribution: Decimal
     total_collected: Decimal
     total_saved: Decimal
@@ -129,6 +126,7 @@ class MemberStatusOut(BaseModel):
     member_name: str
     member_phone: str
     is_host: bool
+    is_meeting_host: bool
     attended: bool
     total_paid: Decimal
     balance: Decimal

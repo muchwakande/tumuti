@@ -127,7 +127,7 @@ export class MeetingDetailComponent implements OnInit {
     this.activeMember = ms;
     this.paymentError = '';
     this.paymentForm = {
-      amount: ms.balance > 0 ? Number(ms.balance) : 1000,
+      amount: ms.balance > 0 ? Number(ms.balance) : (ms.is_meeting_host ? 200 : 1000),
       method: 'cash',
       notes: '',
     };
@@ -181,9 +181,10 @@ export class MeetingDetailComponent implements OnInit {
     return { scheduled: 'status-scheduled', completed: 'status-completed', cancelled: 'status-rejected' }[status] ?? '';
   }
 
-  balanceClass(balance: number): string {
-    if (balance <= 0) return 'text-green-600';
-    if (balance < Number(this.detail?.expected_contribution ?? 1000)) return 'text-yellow-600';
+  balanceClass(ms: MemberStatus): string {
+    if (ms.balance <= 0) return 'text-green-600';
+    const expected = ms.is_meeting_host ? 200 : 1000;
+    if (ms.balance < expected) return 'text-yellow-600';
     return 'text-red-500';
   }
 

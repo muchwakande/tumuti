@@ -25,7 +25,6 @@ def meeting_to_out(meeting: Meeting) -> MeetingOut:
         host_ids=[h.id for h in hosts],
         host_names=[h.name for h in hosts],
         status=meeting.status,
-        savings_percentage=meeting.savings_percentage,
         expected_contribution=meeting.expected_contribution,
         total_collected=meeting.total_collected,
         total_saved=meeting.total_saved,
@@ -91,7 +90,6 @@ def create_meeting(request, payload: MeetingCreate):
         month=payload.month,
         date=payload.date,
         status=payload.status,
-        savings_percentage=payload.savings_percentage,
         notes=payload.notes,
     )
     hosts = FamilyMember.objects.filter(id__in=payload.host_ids, is_host=True)
@@ -131,6 +129,7 @@ def get_meeting_detail(request, meeting_id: int):
     """Return meeting info plus all active members with their attendance, payments and balance."""
     meeting = get_object_or_404(Meeting.objects.prefetch_related('hosts'), id=meeting_id)
 
+    meeting_host_ids = set(meeting.hosts.values_list('id', flat=True))
     members = FamilyMember.objects.filter(is_active=True).order_by('name')
 
     attended_ids = set(
@@ -145,14 +144,18 @@ def get_meeting_detail(request, meeting_id: int):
     for member in members:
         member_payments = payments_by_member.get(member.id, [])
         total_paid = sum((p.amount for p in member_payments), Decimal('0.00'))
+        is_meeting_host = member.id in meeting_host_ids
+        # Hosts of this meeting only owe the Ksh 200 savings portion
+        expected = Meeting.SAVINGS_PER_MEMBER if is_meeting_host else meeting.expected_contribution
         member_statuses.append(MemberStatusOut(
             member_id=member.id,
             member_name=member.name,
             member_phone=member.phone,
             is_host=member.is_host,
+            is_meeting_host=is_meeting_host,
             attended=member.id in attended_ids,
             total_paid=total_paid,
-            balance=meeting.expected_contribution - total_paid,
+            balance=expected - total_paid,
             payments=[
                 PaymentDetailOut(
                     id=p.id,
