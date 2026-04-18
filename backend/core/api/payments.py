@@ -32,7 +32,7 @@ def list_payments(
     member_id: Optional[int] = None,
 ):
     """List payments with optional filters."""
-    qs = Payment.objects.select_related('member', 'meeting__host').all()
+    qs = Payment.objects.select_related('member', 'meeting').all()
     if meeting_id is not None:
         qs = qs.filter(meeting_id=meeting_id)
     if member_id is not None:
@@ -42,17 +42,16 @@ def list_payments(
 
 @router.get("/summary/", response=PaymentSummary)
 def get_payment_summary(request, meeting_id: Optional[int] = None):
-    """Aggregated payment totals. Savings split is derived from each meeting's savings_percentage."""
+    """Aggregated payment totals. KES 200 per member goes to savings, the rest to hosts."""
     qs = Payment.objects.select_related('meeting').all()
     if meeting_id is not None:
         qs = qs.filter(meeting_id=meeting_id)
 
-    payments = list(qs)
-    total_collected = sum((p.amount for p in payments), Decimal('0.00'))
-    total_saved = sum(
-        (p.amount * p.meeting.savings_percentage / Decimal('100')).quantize(Decimal('0.01'))
-        for p in payments
-    )
+    meetings = Meeting.objects.filter(
+        id__in=qs.values_list('meeting_id', flat=True).distinct()
+    ).prefetch_related('payments')
+    total_saved = sum((m.total_saved for m in meetings), Decimal('0.00'))
+    total_collected = sum((p.amount for p in qs), Decimal('0.00'))
     total_to_host = total_collected - total_saved
 
     return PaymentSummary(

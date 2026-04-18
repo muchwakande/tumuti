@@ -13,7 +13,7 @@ class FamilyMemberAdmin(admin.ModelAdmin):
 
 @admin.register(Meeting)
 class MeetingAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'date', 'host', 'status', 'savings_percentage', 'created_at')
+    list_display = ('__str__', 'date', 'status', 'created_at')
     list_filter = ('status', 'month', 'year')
-    search_fields = ('host__name', 'notes')
+    search_fields = ('notes',)
     date_hierarchy = 'date'
