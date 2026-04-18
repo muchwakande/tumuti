@@ -56,8 +56,12 @@ export class MeetingDetailComponent implements OnInit {
     return this.detail?.member_statuses.filter(m => m.attended).length ?? 0;
   }
 
+  get hostCount(): number {
+    return this.detail?.member_statuses.filter(m => m.is_host).length ?? 0;
+  }
+
   get paidCount(): number {
-    return this.detail?.member_statuses.filter(m => m.balance <= 0 && m.total_paid > 0).length ?? 0;
+    return this.detail?.member_statuses.filter(m => m.is_host && m.balance <= 0 && m.total_paid > 0).length ?? 0;
   }
 
   ngOnInit(): void {

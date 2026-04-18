@@ -56,7 +56,7 @@
             <span class="text-sm text-gray-500">
               {{ attendedCount }} / {{ detail.member_statuses.length }} attended
               &nbsp;&middot;&nbsp;
-              {{ paidCount }} / {{ detail.member_statuses.length }} paid in full
+              {{ paidCount }} / {{ hostCount }} hosts paid in full
             </span>
           </div>
 
@@ -112,18 +112,28 @@
                       </button>
                     </td>
                     <td class="px-4 py-3 text-right font-medium text-sm">
-                      {{ ms.total_paid > 0 ? fmt(ms.total_paid) : '—' }}
+                      @if (ms.is_host) {
+                        {{ ms.total_paid > 0 ? fmt(ms.total_paid) : '—' }}
+                      } @else {
+                        <span class="text-gray-300">—</span>
+                      }
                     </td>
                     <td class="px-4 py-3 text-right">
-                      <span [class]="'text-sm font-semibold ' + balanceClass(ms.balance)">
-                        {{ balanceLabel(ms) }}
-                      </span>
+                      @if (ms.is_host) {
+                        <span [class]="'text-sm font-semibold ' + balanceClass(ms.balance)">
+                          {{ balanceLabel(ms) }}
+                        </span>
+                      } @else {
+                        <span class="text-gray-300">—</span>
+                      }
                     </td>
                     <td class="px-4 py-3 text-center">
-                      <button
-                        (click)="$event.stopPropagation(); openPaymentModal(ms)"
-                        class="text-primary-600 hover:text-primary-800 text-sm font-medium px-2 py-1 rounded hover:bg-primary-50 transition-colors"
-                      >+ Pay</button>
+                      @if (ms.is_host) {
+                        <button
+                          (click)="$event.stopPropagation(); openPaymentModal(ms)"
+                          class="text-primary-600 hover:text-primary-800 text-sm font-medium px-2 py-1 rounded hover:bg-primary-50 transition-colors"
+                        >+ Pay</button>
+                      }
                     </td>
                   </tr>
 
