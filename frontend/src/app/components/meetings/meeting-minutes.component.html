@@ -25,7 +25,7 @@
           </h1>
           @if (meeting) {
             <p class="text-gray-500 mt-1 text-sm sm:text-base">
-              {{ meeting.date | date:'longDate' }} &middot; Host: {{ meeting.host_name }}
+              {{ meeting.date | date:'longDate' }} &middot; {{ meeting.host_names.length === 1 ? 'Host' : 'Hosts' }}: {{ meeting.host_names.join(', ') }}
               <span [class]="'ml-2 status-badge ' + statusClass(meeting.status)">{{ meeting.status | titlecase }}</span>
             </p>
           }
