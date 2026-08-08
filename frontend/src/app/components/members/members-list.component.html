@@ -35,7 +35,56 @@
       @if (loading) {
         <app-loading-spinner text="Loading members..."></app-loading-spinner>
       } @else {
-        <div class="card overflow-hidden">
+        <!-- Mobile card list -->
+        <div class="space-y-3 md:hidden">
+          @for (member of members; track member.id) {
+            <div class="card">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div [class]="'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ' + (member.is_host ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600')">
+                    {{ member.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="font-medium text-gray-900 truncate">{{ member.name }}</p>
+                    <p class="text-sm text-gray-500 truncate">{{ member.phone }}</p>
+                  </div>
+                </div>
+                <span [class]="'status-badge flex-shrink-0 ' + (member.is_active ? 'status-completed' : 'status-rejected')">
+                  {{ member.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <div class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-500">Role:</span>
+                  @if (member.is_host) {
+                    <span class="status-badge bg-primary-100 text-primary-700 ml-1">Host</span>
+                  } @else {
+                    <span class="status-badge bg-gray-100 text-gray-600 ml-1">Member</span>
+                  }
+                </div>
+                <div>
+                  <span class="text-gray-500">Parent:</span>
+                  <span class="text-gray-800 ml-1">{{ getParentName(member.parent_id) }}</span>
+                </div>
+                @if (member.spouse_name) {
+                  <div class="col-span-2">
+                    <span class="text-gray-500">Spouse:</span>
+                    <span class="text-gray-800 ml-1"><span class="text-rose-400">♥</span> {{ member.spouse_name }}</span>
+                  </div>
+                }
+              </div>
+              <div class="mt-3 pt-3 border-t border-gray-100 flex justify-end gap-4">
+                <button (click)="editMember(member)" class="text-primary-600 hover:text-primary-800 text-sm font-medium">Edit</button>
+                <button (click)="confirmDelete(member)" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+              </div>
+            </div>
+          } @empty {
+            <div class="card text-center py-10 text-gray-500">No members found.</div>
+          }
+        </div>
+
+        <!-- Desktop table -->
+        <div class="card overflow-hidden hidden md:block">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="table-header">

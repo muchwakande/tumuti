@@ -37,9 +37,9 @@
         <div class="space-y-4">
           @for (meeting of meetings; track meeting.id) {
             <div class="card hover:shadow-lg transition-shadow">
-              <div class="flex items-start justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-3 mb-2 flex-wrap">
                     <h3 class="text-lg font-bold text-gray-900">
                       {{ monthName(meeting.month) }} {{ meeting.year }}
                     </h3>
@@ -88,18 +88,20 @@
                     }
                   }
                 </div>
-                <div class="flex flex-col gap-2 ml-4">
-                  <a [routerLink]="['/meetings', meeting.id]" class="btn-primary text-xs text-center">
+                <div class="flex flex-wrap gap-2 pt-3 border-t border-gray-100 lg:pt-0 lg:border-t-0 lg:flex-col lg:items-stretch lg:flex-shrink-0 lg:w-36 lg:ml-4">
+                  <a [routerLink]="['/meetings', meeting.id]" class="btn-primary text-xs text-center flex-1 lg:flex-none">
                     View Detail
                   </a>
-                  <a [routerLink]="['/payments']" [queryParams]="{meeting_id: meeting.id}" class="btn-secondary text-xs text-center">
+                  <a [routerLink]="['/payments']" [queryParams]="{meeting_id: meeting.id}" class="btn-secondary text-xs text-center flex-1 lg:flex-none">
                     Payments
                   </a>
-                  <a [routerLink]="['/meetings', meeting.id, 'minutes']" class="btn-secondary text-xs text-center">
+                  <a [routerLink]="['/meetings', meeting.id, 'minutes']" class="btn-secondary text-xs text-center flex-1 lg:flex-none">
                     {{ meeting.minutes ? 'View Minutes' : 'Add Minutes' }}
                   </a>
-                  <button (click)="editMeeting(meeting)" class="text-primary-600 hover:text-primary-800 text-xs font-medium text-right">Edit</button>
-                  <button (click)="confirmDelete(meeting)" class="text-red-600 hover:text-red-800 text-xs font-medium text-right">Delete</button>
+                  <div class="flex gap-4 basis-full justify-center lg:basis-auto lg:justify-end lg:gap-3">
+                    <button (click)="editMeeting(meeting)" class="text-primary-600 hover:text-primary-800 text-xs font-medium">Edit</button>
+                    <button (click)="confirmDelete(meeting)" class="text-red-600 hover:text-red-800 text-xs font-medium">Delete</button>
+                  </div>
                 </div>
               </div>
             </div>
