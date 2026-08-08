@@ -19,6 +19,15 @@
             }
           </select>
         </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-600">Welfare Event:</label>
+          <select [(ngModel)]="filterWelfareEventId" (ngModelChange)="load()" class="input-field py-1 text-sm w-48">
+            <option [ngValue]="null">All welfare events</option>
+            @for (e of welfareEvents; track e.id) {
+              <option [ngValue]="e.id">{{ eventTypeLabel(e.event_type) }} – {{ e.member_name }}</option>
+            }
+          </select>
+        </div>
         <span class="text-sm text-gray-500 ml-auto">{{ payments.length }} payment(s)</span>
       </div>
 
@@ -53,7 +62,7 @@
               <thead class="table-header">
                 <tr>
                   <th class="px-6 py-3 text-left">Member</th>
-                  <th class="px-6 py-3 text-left">Meeting</th>
+                  <th class="px-6 py-3 text-left">For</th>
                   <th class="px-6 py-3 text-left">Amount</th>
                   <th class="px-6 py-3 text-left">Method</th>
                   <th class="px-6 py-3 text-left">Notes</th>
@@ -65,7 +74,12 @@
                 @for (p of payments; track p.id) {
                   <tr class="hover:bg-gray-50">
                     <td class="table-cell font-medium text-gray-900">{{ p.member_name }}</td>
-                    <td class="table-cell text-gray-600">{{ p.meeting_label }}</td>
+                    <td class="table-cell text-gray-600">
+                      <span [class]="'status-badge mr-2 ' + (p.target_type === 'meeting' ? 'bg-blue-100 text-blue-700' : 'bg-primary-100 text-primary-700')">
+                        {{ p.target_type === 'meeting' ? 'Meeting' : 'Welfare' }}
+                      </span>
+                      {{ p.meeting_label ?? p.welfare_event_label }}
+                    </td>
                     <td class="table-cell font-semibold text-gray-900">{{ fmt(p.amount) }}</td>
                     <td class="table-cell">
                       <span [class]="'status-badge ' + (p.method === 'mpesa' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700')">
@@ -102,14 +116,39 @@
               <form (ngSubmit)="save()" #f="ngForm">
                 <div class="space-y-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Meeting *</label>
-                    <select [(ngModel)]="form.meeting_id" name="meeting_id" required class="input-field">
-                      <option [ngValue]="0" disabled>Select a meeting</option>
-                      @for (m of meetings; track m.id) {
-                        <option [ngValue]="m.id">{{ monthName(m.month) }} {{ m.year }}</option>
-                      }
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Record for *</label>
+                    <div class="flex gap-4">
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" [ngModel]="formTarget" (ngModelChange)="setFormTarget($event)" name="formTarget" value="meeting" class="text-primary-600" />
+                        <span class="text-sm text-gray-700">Meeting</span>
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" [ngModel]="formTarget" (ngModelChange)="setFormTarget($event)" name="formTarget" value="welfare_event" class="text-primary-600" />
+                        <span class="text-sm text-gray-700">Welfare Event</span>
+                      </label>
+                    </div>
                   </div>
+                  @if (formTarget === 'meeting') {
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Meeting *</label>
+                      <select [(ngModel)]="form.meeting_id" name="meeting_id" required class="input-field">
+                        <option [ngValue]="0" disabled>Select a meeting</option>
+                        @for (m of meetings; track m.id) {
+                          <option [ngValue]="m.id">{{ monthName(m.month) }} {{ m.year }}</option>
+                        }
+                      </select>
+                    </div>
+                  } @else {
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Welfare Event *</label>
+                      <select [(ngModel)]="form.welfare_event_id" name="welfare_event_id" required class="input-field">
+                        <option [ngValue]="0" disabled>Select a welfare event</option>
+                        @for (e of welfareEvents; track e.id) {
+                          <option [ngValue]="e.id">{{ eventTypeLabel(e.event_type) }} – {{ e.member_name }}</option>
+                        }
+                      </select>
+                    </div>
+                  }
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Member *</label>
                     <select [(ngModel)]="form.member_id" name="member_id" required class="input-field">
@@ -141,7 +180,7 @@
                 </div>
                 <div class="flex justify-end gap-3 mt-6">
                   <button type="button" (click)="closeModal()" class="btn-secondary">Cancel</button>
-                  <button type="submit" [disabled]="!f.valid || form.meeting_id === 0 || form.member_id === 0 || saving" class="btn-primary disabled:opacity-50">
+                  <button type="submit" [disabled]="!f.valid || !canSave || saving" class="btn-primary disabled:opacity-50">
                     {{ saving ? 'Saving...' : 'Record Payment' }}
                   </button>
                 </div>

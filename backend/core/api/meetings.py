@@ -1,12 +1,13 @@
 from decimal import Decimal
 from typing import List, Optional
 from ninja import Router
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 
 from ..models import Meeting, FamilyMember, Attendance, Payment
 from ..schemas import (
     MeetingCreate, MeetingUpdate, MeetingOut, MeetingDetailOut,
-    MemberStatusOut, PaymentDetailOut, MessageOut,
+    MemberStatusOut, PaymentDetailOut, HostArrearsOut, MessageOut,
 )
 from ..auth import AuthBearer
 
@@ -17,18 +18,39 @@ VALID_MONTHS = {4, 8, 12}
 
 def meeting_to_out(meeting: Meeting) -> MeetingOut:
     hosts = list(meeting.hosts.all())
+
+    host_ids = [h.id for h in hosts]
+    paid_by_host: dict[int, Decimal] = {}
+    if host_ids:
+        paid_by_host = dict(
+            meeting.payments.filter(member_id__in=host_ids)
+            .values('member_id')
+            .annotate(total=Sum('amount'))
+            .values_list('member_id', 'total')
+        )
+    host_arrears = [
+        HostArrearsOut(
+            member_id=h.id,
+            member_name=h.name,
+            balance=Meeting.SAVINGS_PER_MEMBER - paid_by_host.get(h.id, Decimal('0.00')),
+        )
+        for h in hosts
+        if paid_by_host.get(h.id, Decimal('0.00')) < Meeting.SAVINGS_PER_MEMBER
+    ]
+
     return MeetingOut(
         id=meeting.id,
         year=meeting.year,
         month=meeting.month,
         date=meeting.date,
-        host_ids=[h.id for h in hosts],
+        host_ids=host_ids,
         host_names=[h.name for h in hosts],
         status=meeting.status,
         expected_contribution=meeting.expected_contribution,
         total_collected=meeting.total_collected,
         total_saved=meeting.total_saved,
         total_to_host=meeting.total_to_host,
+        host_arrears=host_arrears,
         notes=meeting.notes,
         minutes=meeting.minutes,
         created_at=meeting.created_at,
@@ -137,7 +159,7 @@ def get_meeting_detail(request, meeting_id: int):
     )
 
     payments_by_member: dict[int, list[Payment]] = {}
-    for p in Payment.objects.filter(meeting=meeting).order_by('created_at'):
+    for p in meeting.payments.order_by('created_at'):
         payments_by_member.setdefault(p.member_id, []).append(p)
 
     member_statuses = []

@@ -1,22 +1,26 @@
 export interface Payment {
   id: number;
-  meeting_id: number;
-  meeting_label: string;
   member_id: number;
   member_name: string;
   amount: number;
   method: 'cash' | 'mpesa';
   notes: string;
+  target_type: 'meeting' | 'welfare_event';
+  meeting_id: number | null;
+  meeting_label: string | null;
+  welfare_event_id: number | null;
+  welfare_event_label: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface PaymentCreate {
-  meeting_id: number;
   member_id: number;
   amount: number;
   method: 'cash' | 'mpesa';
   notes?: string;
+  meeting_id?: number | null;
+  welfare_event_id?: number | null;
 }
 
 export interface PaymentSummary {

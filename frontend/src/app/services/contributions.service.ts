@@ -12,10 +12,13 @@ export class PaymentsService {
 
   constructor(private http: HttpClient) {}
 
-  getPayments(filters?: { meeting_id?: number; member_id?: number }): Observable<Payment[]> {
+  getPayments(filters?: { meeting_id?: number; welfare_event_id?: number; member_id?: number }): Observable<Payment[]> {
     let params = new HttpParams();
     if (filters?.meeting_id !== undefined) {
       params = params.set('meeting_id', filters.meeting_id.toString());
+    }
+    if (filters?.welfare_event_id !== undefined) {
+      params = params.set('welfare_event_id', filters.welfare_event_id.toString());
     }
     if (filters?.member_id !== undefined) {
       params = params.set('member_id', filters.member_id.toString());

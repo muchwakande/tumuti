@@ -94,6 +94,19 @@ export class MeetingsListComponent implements OnInit {
     return map[status] ?? '';
   }
 
+  isPastMeeting(meeting: Meeting): boolean {
+    if (meeting.status === 'cancelled') return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return new Date(meeting.date) < today;
+  }
+
+  hostArrearsLabel(meeting: Meeting): string {
+    return meeting.host_arrears
+      .map(h => `${h.member_name} (${this.formatCurrency(h.balance)})`)
+      .join(', ');
+  }
+
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
   }

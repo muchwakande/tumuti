@@ -77,6 +77,16 @@
                       </div>
                     </div>
                   }
+                  @if (isPastMeeting(meeting)) {
+                    @if (meeting.host_arrears.length > 0) {
+                      <div class="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg text-sm">
+                        <span class="text-red-700 font-medium">Host arrears:</span>
+                        <span class="text-red-600 ml-1">{{ hostArrearsLabel(meeting) }}</span>
+                      </div>
+                    } @else {
+                      <div class="mt-3 text-sm text-green-600 font-medium">✓ All hosts settled</div>
+                    }
+                  }
                 </div>
                 <div class="flex flex-col gap-2 ml-4">
                   <a [routerLink]="['/meetings', meeting.id]" class="btn-primary text-xs text-center">

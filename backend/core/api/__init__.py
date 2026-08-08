@@ -6,12 +6,13 @@ from .auth import router as auth_router
 from .members import router as members_router
 from .meetings import router as meetings_router
 from .payments import router as payments_router
+from .welfare_events import router as welfare_events_router
 
 
 api = NinjaAPI(
     title="Family Reunion API",
     version="1.0.0",
-    description="API for managing family reunion members, meetings, and payments",
+    description="API for managing family reunion members, meetings, payments, and welfare events",
 )
 
 
@@ -28,3 +29,4 @@ api.add_router("/auth", auth_router, tags=["Authentication"])
 api.add_router("/members", members_router, tags=["Members"])
 api.add_router("/meetings", meetings_router, tags=["Meetings"])
 api.add_router("/payments", payments_router, tags=["Payments"])
+api.add_router("/welfare-events", welfare_events_router, tags=["Welfare Events"])

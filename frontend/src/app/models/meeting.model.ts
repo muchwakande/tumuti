@@ -1,3 +1,9 @@
+export interface HostArrears {
+  member_id: number;
+  member_name: string;
+  balance: number;
+}
+
 export interface Meeting {
   id: number;
   year: number;
@@ -10,6 +16,7 @@ export interface Meeting {
   total_collected: number;
   total_saved: number;
   total_to_host: number;
+  host_arrears: HostArrears[];
   notes: string;
   minutes: string;
   created_at: string;

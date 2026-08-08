@@ -91,6 +91,12 @@ class MeetingUpdate(BaseModel):
     minutes: Optional[str] = None
 
 
+class HostArrearsOut(BaseModel):
+    member_id: int
+    member_name: str
+    balance: Decimal
+
+
 class MeetingOut(BaseModel):
     id: int
     year: int
@@ -103,6 +109,7 @@ class MeetingOut(BaseModel):
     total_collected: Decimal
     total_saved: Decimal
     total_to_host: Decimal
+    host_arrears: List[HostArrearsOut]
     notes: str
     minutes: str
     created_at: datetime
@@ -137,24 +144,104 @@ class MeetingDetailOut(MeetingOut):
     member_statuses: List[MemberStatusOut]
 
 
+# Payout Schemas
+class PayoutCreate(BaseModel):
+    amount: Decimal = Field(..., gt=0)
+    status: str = "pending"
+    paid_date: Optional[date] = None
+    notes: str = ""
+
+
+class PayoutUpdate(BaseModel):
+    amount: Optional[Decimal] = None
+    status: Optional[str] = None
+    paid_date: Optional[date] = None
+    notes: Optional[str] = None
+
+
+class PayoutOut(BaseModel):
+    id: int
+    welfare_event_id: int
+    amount: Decimal
+    status: str
+    paid_date: Optional[date]
+    notes: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Welfare Event Schemas
+class WelfareEventBase(BaseModel):
+    member_id: int
+    event_type: str = Field(..., description="wedding, graduation, or death")
+    date: date
+    contribution_expected: Optional[Decimal] = None
+    notes: str = ""
+
+
+class WelfareEventCreate(WelfareEventBase):
+    pass
+
+
+class WelfareEventUpdate(BaseModel):
+    member_id: Optional[int] = None
+    event_type: Optional[str] = None
+    date: Optional[date] = None
+    contribution_expected: Optional[Decimal] = None
+    notes: Optional[str] = None
+
+
+class WelfareEventOut(BaseModel):
+    id: int
+    member_id: int
+    member_name: str
+    event_type: str
+    date: date
+    contribution_expected: Optional[Decimal]
+    total_contributed: Decimal
+    notes: str
+    payout: Optional[PayoutOut] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class HostContributionStatus(BaseModel):
+    member_id: int
+    member_name: str
+    total_paid: Decimal
+    balance: Decimal
+    payments: List[PaymentDetailOut]
+
+
+class WelfareEventDetailOut(WelfareEventOut):
+    host_statuses: List[HostContributionStatus]
+
+
 # Payment Schemas
 class PaymentCreate(BaseModel):
-    meeting_id: int
     member_id: int
     amount: Decimal = Field(..., gt=0)
     method: str = "cash"
     notes: str = ""
+    meeting_id: Optional[int] = None
+    welfare_event_id: Optional[int] = None
 
 
 class PaymentOut(BaseModel):
     id: int
-    meeting_id: int
-    meeting_label: str
     member_id: int
     member_name: str
     amount: Decimal
     method: str
     notes: str
+    target_type: str = Field(..., description="'meeting' or 'welfare_event'")
+    meeting_id: Optional[int] = None
+    meeting_label: Optional[str] = None
+    welfare_event_id: Optional[int] = None
+    welfare_event_label: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

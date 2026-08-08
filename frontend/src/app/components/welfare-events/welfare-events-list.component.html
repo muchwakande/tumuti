@@ -1,0 +1,162 @@
+
+    <div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Welfare Events</h1>
+          <p class="text-gray-500 mt-1">Weddings, graduations, and deaths — payouts and host contributions</p>
+        </div>
+        <button (click)="openCreateModal()" class="btn-primary sm:self-start">+ Record Event</button>
+      </div>
+
+      <!-- Filter -->
+      <div class="card mb-4 flex gap-4 items-center flex-wrap">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-600">Type:</label>
+          <select [(ngModel)]="filterEventType" (ngModelChange)="loadEvents()" class="input-field py-1 text-sm w-36">
+            <option value="">All types</option>
+            @for (t of eventTypes; track t.value) {
+              <option [value]="t.value">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+        <span class="text-sm text-gray-500 ml-auto">{{ events.length }} event(s)</span>
+      </div>
+
+      @if (loading) {
+        <app-loading-spinner text="Loading welfare events..."></app-loading-spinner>
+      } @else {
+        <div class="space-y-4">
+          @for (event of events; track event.id) {
+            <div class="card hover:shadow-lg transition-shadow">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-bold text-gray-900">{{ event.member_name }}</h3>
+                    <span [class]="'status-badge ' + eventTypeBadgeClass(event.event_type)">
+                      {{ eventTypeLabel(event.event_type) }}
+                    </span>
+                    @if (event.payout) {
+                      <span [class]="'status-badge ' + (event.payout.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700')">
+                        Payout {{ event.payout.status === 'paid' ? 'Paid' : 'Pending' }}
+                      </span>
+                    }
+                  </div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span class="text-gray-500">Date:</span>
+                      <p class="font-medium text-gray-900">{{ event.date | date:'mediumDate' }}</p>
+                    </div>
+                    <div>
+                      <span class="text-gray-500">Contribution Expected:</span>
+                      <p class="font-medium text-gray-900">{{ event.contribution_expected !== null ? fmt(event.contribution_expected) + ' / host' : '—' }}</p>
+                    </div>
+                    <div>
+                      <span class="text-gray-500">Contributed:</span>
+                      <p class="font-medium text-green-700">{{ fmt(event.total_contributed) }}</p>
+                    </div>
+                    <div>
+                      <span class="text-gray-500">Payout:</span>
+                      <p class="font-medium text-blue-700">{{ event.payout ? fmt(event.payout.amount) : '—' }}</p>
+                    </div>
+                  </div>
+                  @if (event.notes) {
+                    <p class="text-sm text-gray-500 mt-2">{{ event.notes }}</p>
+                  }
+                </div>
+                <div class="flex flex-col gap-2 ml-4">
+                  <a [routerLink]="['/welfare-events', event.id]" class="btn-primary text-xs text-center">
+                    View Detail
+                  </a>
+                  <button (click)="editEvent(event)" class="text-primary-600 hover:text-primary-800 text-xs font-medium text-right">Edit</button>
+                  <button (click)="confirmDelete(event)" class="text-red-600 hover:text-red-800 text-xs font-medium text-right">Delete</button>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="card text-center py-12">
+              <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+              <p class="text-gray-500 text-lg">No welfare events found.</p>
+              <p class="text-gray-400 text-sm mt-1">Record a wedding, graduation, or death.</p>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Create/Edit Modal -->
+      @if (showModal) {
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+          <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75" (click)="closeModal()"></div>
+            <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 class="text-lg font-semibold mb-4">{{ editingEvent ? 'Edit Welfare Event' : 'Record Welfare Event' }}</h3>
+              @if (formError) {
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{{ formError }}</div>
+              }
+              <form (ngSubmit)="saveEvent()" #eventForm="ngForm">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Member *</label>
+                    <select [(ngModel)]="form.member_id" name="member_id" required class="input-field">
+                      <option [ngValue]="0" disabled>Select a member</option>
+                      @for (m of members; track m.id) {
+                        <option [ngValue]="m.id">{{ m.name }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Event Type *</label>
+                    <select [(ngModel)]="form.event_type" name="event_type" required class="input-field">
+                      @for (t of eventTypes; track t.value) {
+                        <option [value]="t.value">{{ t.label }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                    <input type="date" [(ngModel)]="form.date" name="date" required class="input-field" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Contribution Expected per Host (Ksh)</label>
+                    <input type="number" [(ngModel)]="form.contribution_expected" name="contribution_expected" min="0" class="input-field" placeholder="Optional — leave blank if none" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea [(ngModel)]="form.notes" name="notes" rows="2" class="input-field" placeholder="Optional notes..."></textarea>
+                  </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                  <button type="button" (click)="closeModal()" class="btn-secondary">Cancel</button>
+                  <button type="submit" [disabled]="!eventForm.valid || form.member_id === 0" class="btn-primary disabled:opacity-50">
+                    {{ editingEvent ? 'Save Changes' : 'Record' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Delete Confirm -->
+      @if (showDeleteConfirm) {
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+          <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75" (click)="showDeleteConfirm = false"></div>
+            <div class="relative bg-white rounded-lg shadow-xl max-w-sm w-full p-6 text-center">
+              <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium">Delete Welfare Event</h3>
+              <p class="mt-2 text-sm text-gray-500">Delete <strong>{{ eventToDelete ? eventTypeLabel(eventToDelete.event_type) + ' – ' + eventToDelete.member_name : '' }}</strong>? Its payout and contributions will also be deleted.</p>
+              <div class="mt-6 flex justify-center gap-3">
+                <button (click)="showDeleteConfirm = false" class="btn-secondary">Cancel</button>
+                <button (click)="deleteEvent()" class="btn-danger">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>

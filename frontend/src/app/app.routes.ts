@@ -44,6 +44,14 @@ export const routes: Routes = [
       {
         path: 'payments',
         loadComponent: () => import('./components/contributions/contributions-list.component').then(m => m.ContributionsListComponent)
+      },
+      {
+        path: 'welfare-events',
+        loadComponent: () => import('./components/welfare-events/welfare-events-list.component').then(m => m.WelfareEventsListComponent)
+      },
+      {
+        path: 'welfare-events/:id',
+        loadComponent: () => import('./components/welfare-events/welfare-event-detail.component').then(m => m.WelfareEventDetailComponent)
       }
     ]
   },
